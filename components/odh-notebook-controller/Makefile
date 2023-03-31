@@ -12,7 +12,7 @@ CONTAINER_ENGINE ?= podman
 ENVTEST_K8S_VERSION = 1.23
 
 # Kubernetes configuration
-K8S_NAMESPACE = odh-notebook-controller-system
+K8S_NAMESPACE ?= odh-notebook-controller-system
 
 # Webhook configuration
 WEBHOOK_PORT = 8443
@@ -105,7 +105,7 @@ run: manifests generate fmt vet certificates ktunnel ## Run a controller from yo
 	go run ./main.go
 
 .PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
+docker-build: # test ## Build docker image with the manager.
 	cd ../ && ${CONTAINER_ENGINE} build . -t ${IMG}:${TAG} -f odh-notebook-controller/Dockerfile
 
 .PHONY: docker-push

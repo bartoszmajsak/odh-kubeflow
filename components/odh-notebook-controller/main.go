@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	maistrav1 "maistra.io/api/core/v1"
 	"os"
 	"time"
 
@@ -53,6 +54,7 @@ func init() {
 	utilruntime.Must(nbv1.AddToScheme(scheme))
 	utilruntime.Must(routev1.AddToScheme(scheme))
 	utilruntime.Must(configv1.AddToScheme(scheme))
+	utilruntime.Must(maistrav1.AddToScheme(scheme))
 
 	//+kubebuilder:scaffold:scheme
 }

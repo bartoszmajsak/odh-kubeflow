@@ -16,6 +16,7 @@ require (
 	k8s.io/apimachinery v0.24.3
 	k8s.io/client-go v0.24.2
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
+	maistra.io/api v0.0.0-20220922161140-df825ecdc2bb // needs to be pinned to older version due to golang ver 1.19 in newer ones
 	sigs.k8s.io/controller-runtime v0.11.0
 )
 

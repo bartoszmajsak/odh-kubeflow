@@ -37,8 +37,8 @@ const (
 	NotebookPort      = 8888
 )
 
-// ReconcileNetworkPolicies will manage the network policies reconciliation
-// required by the notebook
+// ReconcileAllNetworkPolicies will manage the network policies reconciliation
+// required by the notebook.
 func (r *OpenshiftNotebookReconciler) ReconcileAllNetworkPolicies(notebook *nbv1.Notebook, ctx context.Context) error {
 	// Initialize logger format
 	log := r.Log.WithValues("notebook", notebook.Name, "namespace", notebook.Namespace)

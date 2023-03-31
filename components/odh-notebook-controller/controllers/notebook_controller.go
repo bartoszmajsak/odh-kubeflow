@@ -40,6 +40,7 @@ import (
 
 const (
 	AnnotationInjectOAuth             = "notebooks.opendatahub.io/inject-oauth"
+	AnnotationServiceMesh             = "opendatahub.io/service-mesh"
 	AnnotationValueReconciliationLock = "odh-notebook-controller-lock"
 	AnnotationLogoutUrl               = "notebooks.opendatahub.io/oauth-logout-url"
 )
@@ -73,6 +74,17 @@ func CompareNotebooks(nb1 nbv1.Notebook, nb2 nbv1.Notebook) bool {
 func OAuthInjectionIsEnabled(meta metav1.ObjectMeta) bool {
 	if meta.Annotations[AnnotationInjectOAuth] != "" {
 		result, _ := strconv.ParseBool(meta.Annotations[AnnotationInjectOAuth])
+		return result
+	} else {
+		return false
+	}
+}
+
+// ServiceMeshIsEnabled returns true if the notebook should be part of
+// the service mesh.
+func ServiceMeshIsEnabled(meta metav1.ObjectMeta) bool {
+	if meta.Annotations[AnnotationServiceMesh] != "" {
+		result, _ := strconv.ParseBool(meta.Annotations[AnnotationServiceMesh])
 		return result
 	} else {
 		return false
@@ -151,10 +163,15 @@ func (r *OpenshiftNotebookReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, err
 	}
 
-	// Create the objects required by the OAuth proxy sidecar (see
-	// notebook_oauth.go file)
-	if OAuthInjectionIsEnabled(notebook.ObjectMeta) {
-		// Call the OAuth Service Account reconciler
+	if ServiceMeshIsEnabled(notebook.ObjectMeta) {
+		log.Info("Adding namespace to the service mesh")
+		err = r.ReconcileServiceMeshMembership(notebook, ctx)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	} else if OAuthInjectionIsEnabled(notebook.ObjectMeta) {
+		// Create the objects required by the OAuth proxy sidecar (see
+		// notebook_oauth.go file)
 		err = r.ReconcileOAuthServiceAccount(notebook, ctx)
 		if err != nil {
 			return ctrl.Result{}, err
