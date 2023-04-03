@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	authorino "github.com/kuadrant/authorino/api/v1beta1"
 	maistrav1 "maistra.io/api/core/v1"
 	"os"
 	"time"
@@ -55,6 +56,7 @@ func init() {
 	utilruntime.Must(routev1.AddToScheme(scheme))
 	utilruntime.Must(configv1.AddToScheme(scheme))
 	utilruntime.Must(maistrav1.AddToScheme(scheme))
+	utilruntime.Must(authorino.AddToScheme(scheme))
 
 	//+kubebuilder:scaffold:scheme
 }

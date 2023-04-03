@@ -41,6 +41,7 @@ import (
 const (
 	AnnotationInjectOAuth             = "notebooks.opendatahub.io/inject-oauth"
 	AnnotationServiceMesh             = "opendatahub.io/service-mesh"
+	AnnotationHubUrl                  = "opendatahub.io/hub-url"
 	AnnotationValueReconciliationLock = "odh-notebook-controller-lock"
 	AnnotationLogoutUrl               = "notebooks.opendatahub.io/oauth-logout-url"
 )
@@ -166,6 +167,10 @@ func (r *OpenshiftNotebookReconciler) Reconcile(ctx context.Context, req ctrl.Re
 	if ServiceMeshIsEnabled(notebook.ObjectMeta) {
 		log.Info("Adding namespace to the service mesh")
 		err = r.ReconcileServiceMeshMembership(notebook, ctx)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		err = r.ReconcileAuthConfig(notebook, ctx)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
