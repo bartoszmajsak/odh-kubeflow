@@ -25,6 +25,7 @@ import (
 	"k8s.io/client-go/util/retry"
 	maistrav1 "maistra.io/api/core/v1"
 	"reflect"
+	"regexp"
 )
 
 func (r *OpenshiftNotebookReconciler) ReconcileServiceMeshMembership(notebook *nbv1.Notebook, ctx context.Context) error {
@@ -141,7 +142,7 @@ func (r *OpenshiftNotebookReconciler) createAuthConfig(notebook *nbv1.Notebook) 
 		},
 		Spec: authorino.AuthConfigSpec{
 			Hosts: []string{
-				notebook.Annotations[AnnotationHubUrl],
+				removeProtocolPrefix(notebook.Annotations[AnnotationHubUrl]),
 			},
 			Identity: []*authorino.Identity{
 				{
@@ -214,4 +215,9 @@ func (r *OpenshiftNotebookReconciler) createMeshMember(notebook *nbv1.Notebook) 
 			},
 		},
 	}
+}
+
+func removeProtocolPrefix(s string) string {
+	r := regexp.MustCompile(`^(https?://)`)
+	return r.ReplaceAllString(s, "")
 }
