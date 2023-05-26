@@ -136,6 +136,36 @@ setup: manifests kustomize ## Replace Kustomize manifests with your environment 
 	sed -i'' -e 's,newName: .*,newName: '"${IMG}"',' ./config/base/kustomization.yaml
 	sed -i'' -e 's,newTag: .*,newTag: '"${TAG}"',' ./config/base/kustomization.yaml
 
+.PHONY: setup-service-mesh
+setup-service-mesh: kustomize ## Replace Kustomize manifests with your environment configuration.
+	sed -i'' -e 's,namespace: .*,namespace: '"${K8S_NAMESPACE}"',' \
+			../notebook-controller/config/overlays/service-mesh/smm.yaml
+	sed -i'' -e 's,namespace: .*,namespace: '"${K8S_NAMESPACE}"',' \
+		../notebook-controller/config/overlays/service-mesh/kustomization.yaml
+	sed -i'' -e 's,newName: .*,newName: '"${KF_IMG}"',' \
+		../notebook-controller/config/overlays/service-mesh/kustomization.yaml
+	sed -i'' -e 's,newTag: .*,newTag: '"${KF_TAG}"',' \
+	../notebook-controller/config/overlays/service-mesh/kustomization.yaml
+
+.PHONE: deploy-service-mesh
+deploy-service-mesh: setup-service-mesh ## Deploy kubeflow controller to the Openshift cluster.
+	oc apply -f ../notebook-controller/config/overlays/service-mesh/subscriptions.yaml
+	until oc get crd servicemeshcontrolplanes.maistra.io  >/dev/null 2>&1; do echo 'Waiting for ServiceMeshControlPlane CRD to appear...'; sleep 1; done
+	$(KUSTOMIZE) build ../notebook-controller/config/overlays/service-mesh | oc apply -f -
+	oc wait --for condition=Ready smcp/basic --timeout 300s -n istio-system
+
+	oc apply -f ../notebook-controller/config/overlays/service-mesh/smm.yaml
+
+.PHONE: undeploy-service-mesh
+undeploy-service-mesh: setup-service-mesh ## Deploy kubeflow controller to the Openshift cluster.
+	oc delete --ignore-not-found=true -f ../notebook-controller/config/overlays/service-mesh/smm.yaml
+	oc delete --ignore-not-found=true -f ../notebook-controller/config/overlays/service-mesh/subscriptions.yaml
+	$(KUSTOMIZE) build ../notebook-controller/config/overlays/service-mesh | oc delete --ignore-not-found=true -f
+	oc delete --ignore-not-found=true crd servicemeshcontrolplanes.maistra.io
+	oc wait --for condition=Ready smcp/basic --timeout 300s -n istio-system
+
+
+
 .PHONE: deploy-kf
 deploy-kf: setup-kf ## Deploy kubeflow controller to the Openshift cluster.
 	$(KUSTOMIZE) build ../notebook-controller/config/overlays/openshift | oc apply -f -

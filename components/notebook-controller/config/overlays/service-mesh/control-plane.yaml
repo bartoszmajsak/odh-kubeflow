@@ -1,0 +1,13 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic
+  namespace: istio-system
+spec:
+  version: v2.3
+  gateways:
+    # no need to use IOR -
+    # To be deprecated and we create the route manually
+    openshiftRoute:
+      enabled: false
+   

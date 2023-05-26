@@ -1,0 +1,9 @@
+apiVersion: maistra.io/v1
+kind: ServiceMeshMember
+metadata:
+  name: default
+  namespace: odh-notebook-controller-system
+spec:
+  controlPlaneRef:
+    namespace: odh-notebook-controller-system
+    name: basic
